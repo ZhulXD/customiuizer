@@ -851,7 +851,7 @@ public class GlobalActions {
     }
 
     public static void setupStatusBar(PackageLoadedParam lpparam) {
-        Class<?> StatusBarClass = findClassIfExists("com.android.systemui.statusbar.phone.CentralSurfacesImpl", lpparam.getClassLoader());
+        Class<?> StatusBarClass = findClassIfExists("com.android.systemui.statusbar.phone.CentralSurfacesImpl", lpparam.getDefaultClassLoader());
         if (StatusBarClass == null) return;
         ModuleHelper.findAndHookMethod(StatusBarClass, "start", new MethodHook() {
             @SuppressLint("UnspecifiedRegisterReceiverFlag")
