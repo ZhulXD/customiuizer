@@ -24,19 +24,7 @@ jobs:
       - name: Preinstall SDK components + accept licenses
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0" "platforms;android-33" "build-tools;33.0.1" >/dev/null
-
-      - name: Build io.github.libxposed:service:100-1.0.0 ke mavenLocal (hilang dari maven publik; fix OOM Metaspace)
-        timeout-minutes: 15
-        run: |
-          git clone --depth 1 -b 100 https://github.com/libxposed/service.git /tmp/xservice
-          cd /tmp/xservice
-          sed -i 's/isMinifyEnabled = true/isMinifyEnabled = false/' service/build.gradle.kts
-          chmod +x gradlew
-          export GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1024m"
-          export JAVA_TOOL_OPTIONS="-XX:MaxMetaspaceSize=1024m -Xmx3g"
-          ./gradlew publishToMavenLocal --no-daemon --stacktrace
-          unzip -l ~/.m2/repository/io/github/libxposed/service/100-1.0.0/service-100-1.0.0.aar | head -8
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0" >/dev/null
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
