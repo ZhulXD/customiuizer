@@ -86,7 +86,7 @@ android {
 dependencies {
     //    implementation "ch.acra:acra-core:$acraVersion"
 //    noinspection DifferentStdlibGradleVersion
-    compileOnly files('lib/api-100.aar')
+    compileOnly files('lib/api-102.0.0.aar')
     compileOnly files('lib/miuisystem.jar')
     compileOnly files('lib/framework.jar')
 

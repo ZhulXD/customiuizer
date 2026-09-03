@@ -47,7 +47,7 @@ public class PackagePermissions {
 //		//if (origRequestedPermissionsRequired != null) setObjectField(param.getArgs()[0], "requestedPermissionsRequired", origRequestedPermissionsRequired);
 //	}
 
-	public static void hook(XposedModuleInterface.SystemServerLoadedParam lpparam) {
+	public static void hook(XposedModuleInterface.SystemServerStartingParam lpparam) {
 		systemPackages.add(Helpers.modulePkg);
 		//systemPackages.add("com.miui.packageinstaller");
 

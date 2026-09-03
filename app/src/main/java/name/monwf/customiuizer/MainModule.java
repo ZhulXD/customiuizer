@@ -45,8 +45,13 @@ public class MainModule extends XposedModule {
 
     OnSharedPreferenceChangeListener mListener;
 
-    public MainModule(@NonNull XposedInterface base, @NonNull XposedModuleInterface.ModuleLoadedParam param) {
-        super(base, param);
+    // [duckfix] protokol API-102: konstruktor no-arg, inisialisasi via onModuleLoaded
+    public MainModule() {
+        super();
+    }
+
+    @Override
+    public void onModuleLoaded(@NonNull XposedModuleInterface.ModuleLoadedParam param) {
         processName = param.getProcessName();
     }
 
@@ -86,7 +91,7 @@ public class MainModule extends XposedModule {
     }
 
     @Override
-    public void onSystemServerLoaded(final SystemServerLoadedParam lpparam) {
+    public void onSystemServerStarting(final SystemServerStartingParam lpparam) {
         initPrefs();
         PackagePermissions.hook(lpparam);
         GlobalActions.setupGlobalActions(lpparam);
@@ -230,11 +235,11 @@ public class MainModule extends XposedModule {
             Context mContext = ModuleHelper.findContext(lpparam);
             long restartTime = Settings.System.getLong(mContext.getContentResolver(), "systemui_restart_time", 0L);
             long currentTime = java.lang.System.currentTimeMillis();
-            Class<?> NetworkSpeedViewCls = XposedHelpers.findClassIfExists("com.android.systemui.statusbar.views.NetworkSpeedView", lpparam.getClassLoader());
+            Class<?> NetworkSpeedViewCls = XposedHelpers.findClassIfExists("com.android.systemui.statusbar.views.NetworkSpeedView", lpparam.getDefaultClassLoader());
             if (NetworkSpeedViewCls != null) {
                 SystemUI.newStyle = LinearLayout.class.isAssignableFrom(NetworkSpeedViewCls);
             }
-            ModuleHelper.findAndHookMethod("com.android.systemui.SystemUIApplication", lpparam.getClassLoader(), "onCreate", new MethodHook() {
+            ModuleHelper.findAndHookMethod("com.android.systemui.SystemUIApplication", lpparam.getDefaultClassLoader(), "onCreate", new MethodHook() {
                 private boolean isHooked = false;
                 @Override
                 protected void after(final AfterHookCallback param) throws Throwable {
