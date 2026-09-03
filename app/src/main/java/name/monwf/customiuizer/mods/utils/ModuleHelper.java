@@ -205,7 +205,7 @@ public class ModuleHelper {
     public static Context findContext(XposedModuleInterface.PackageLoadedParam lpparam) {
         Context context = null;
         try {
-            context = (Application)XposedHelpers.callStaticMethod(XposedHelpers.findClass("android.app.ActivityThread", lpparam.getClassLoader()), "currentApplication");
+            context = (Application)XposedHelpers.callStaticMethod(XposedHelpers.findClass("android.app.ActivityThread", lpparam.getDefaultClassLoader()), "currentApplication");
             if (context == null) {
                 Object currentActivityThread = XposedHelpers.callStaticMethod(XposedHelpers.findClass("android.app.ActivityThread", null), "currentActivityThread");
                 if (currentActivityThread != null) context = (Context)XposedHelpers.callMethod(currentActivityThread, "getSystemContext");

@@ -54,8 +54,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import io.github.libxposed.api.XposedInterface;
 import name.monwf.customiuizer.mods.utils.HookerClassHelper.CustomHooker;
 import name.monwf.customiuizer.mods.utils.HookerClassHelper.CustomMethodUnhooker;
-import name.monwf.customiuizer.mods.utils.HookerClassHelper.HighestPriorityHooker;
-import name.monwf.customiuizer.mods.utils.HookerClassHelper.LowestPriorityHooker;
 import name.monwf.customiuizer.mods.utils.HookerClassHelper.MethodHook;
 
 
