@@ -1,10 +1,11 @@
 apply plugin: 'com.android.application'
 
 //def acraVersion = '5.7.0'
-def keystorePropertiesFile = rootProject.file("../keystore.properties")
+// [duckfix] keystore in-repo (PKCS12) agar fork self-contained & CI-ready
+def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-def sFile = file(keystoreProperties['storeFile'])
+def sFile = rootProject.file(keystoreProperties['storeFile'])
 def sPassword = keystoreProperties['storePassword']
 def kAlias = keystoreProperties['keyAlias']
 def kPassword = keystoreProperties['keyPassword']
@@ -36,8 +37,8 @@ android {
         versionCode lastVersion
         versionName lastVersionName
         buildConfigField "long", "BUILD_TIME", System.currentTimeMillis() + "L"
+        // [duckfix] hapus abiFilters arm64-v8a: device target 32-bit-only (armv7), a13 branch tanpa lib native
         resConfigs 'ru-rRU', 'zh-rCN', 'zh-rTW', 'ja-rJP', 'vi-rVN', 'cs-rCZ', 'pt-rBR', 'tr-rTR', 'es-rES'
-        ndk { abiFilters "arm64-v8a" }
     }
     buildTypes {
         develop {

@@ -1,0 +1,35 @@
+name: Build Customiuizer (a13, cloud-32bit)
+
+on:
+  push:
+    branches: [ a13 ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build develop APK
+        run: ./gradlew assembleDevelop --no-daemon --stacktrace
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: customiuizer-a13-develop
+          path: app/build/outputs/apk/develop/*.apk
+          if-no-files-found: error
