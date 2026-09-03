@@ -251,6 +251,7 @@ public class MainModule extends XposedModule {
                 protected void after(final AfterHookCallback param) throws Throwable {
                     if (!isHooked) {
                         isHooked = true;
+                        XposedHelpers.log("[duckfix] SystemUIApplication.onCreate after — setupStatusBar dipanggil");
                         Context context = (Context) XposedHelpers.callMethod(param.getThisObject(), "getApplicationContext");
                         SystemUI.setupStatusBar(context);
                         watchPreferenceChange();

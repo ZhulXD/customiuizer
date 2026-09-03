@@ -2550,6 +2550,7 @@ public class SystemUI {
             @Override
             protected void before(final BeforeHookCallback param) throws Throwable {
                 String iconType = (String)param.getArgs()[0];
+                XposedHelpers.log("[duckfix] setIconVisibility slot=" + iconType + " vis=" + param.getArgs()[1]);
                 if (checkSlot(iconType)) {
                     param.getArgs()[1] = false;
                 }
