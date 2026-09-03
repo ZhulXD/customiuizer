@@ -19,7 +19,8 @@ public class HookerClassHelper {
     /** Pengganti HookerClassHelper.BeforeHookCallback (API-100). */
     public static class BeforeHookCallback {
         final XposedInterface.Chain chain;
-        Object[] argsOverride = null;
+        /** Snapshot args yang STABIL — modifikasi array ini diteruskan ke proceed() */
+        final Object[] args;
         boolean skipped = false;
         Object skipResult = null;
         Object pendingResult = null;
@@ -27,11 +28,12 @@ public class HookerClassHelper {
 
         BeforeHookCallback(XposedInterface.Chain chain) {
             this.chain = chain;
+            this.args = chain.getArgs().toArray();
         }
 
         public Member getMember() { return chain.getExecutable(); }
         public Object getThisObject() { return chain.getThisObject(); }
-        public Object[] getArgs() { return chain.getArgs().toArray(); }
+        public Object[] getArgs() { return args; }
         public Object getResult() { return null; }
         public void setResult(Object result) { pendingResult = result; resultSet = true; }
         public Throwable getThrowable() { return null; }
@@ -44,19 +46,21 @@ public class HookerClassHelper {
     /** Pengganti HookerClassHelper.AfterHookCallback (API-100). */
     public static class AfterHookCallback {
         final XposedInterface.Chain chain;
+        final Object[] args;
         Object result;
         Throwable throwable;
         boolean resultSet = false;
 
-        AfterHookCallback(XposedInterface.Chain chain, Object result, Throwable throwable) {
+        AfterHookCallback(XposedInterface.Chain chain, Object[] args, Object result, Throwable throwable) {
             this.chain = chain;
+            this.args = args;
             this.result = result;
             this.throwable = throwable;
         }
 
         public Member getMember() { return chain.getExecutable(); }
         public Object getThisObject() { return chain.getThisObject(); }
-        public Object[] getArgs() { return chain.getArgs().toArray(); }
+        public Object[] getArgs() { return args; }
         public Object getResult() { return result; }
         public void setResult(Object r) { result = r; resultSet = true; }
         public Throwable getThrowable() { return throwable; }
@@ -192,13 +196,16 @@ public class HookerClassHelper {
                     if (bcb.skipped) return bcb.skipResult;
                 }
             }
+            Object[] args;
+            if (bcb != null) {
+                args = bcb.args; // array stabil — modifikasi mod diteruskan
+            } else {
+                args = chain.getArgs().toArray();
+            }
             Object result;
             Throwable t = null;
             try {
-                if (bcb != null && bcb.argsOverride != null)
-                    result = chain.proceed(bcb.argsOverride);
-                else
-                    result = chain.proceed();
+                result = chain.proceed(args);
             } catch (Throwable e) {
                 t = e;
                 result = null;
@@ -210,7 +217,7 @@ public class HookerClassHelper {
             }
             ArrayList<AfterHookerInfo> afters = afterCallbacks.get(m);
             if (afters != null && !afters.isEmpty()) {
-                AfterHookCallback acb = new AfterHookCallback(chain, result, t);
+                AfterHookCallback acb = new AfterHookCallback(chain, args, result, t);
                 for (AfterHookerInfo hookerInfo : new ArrayList<>(afters)) {
                     hookerInfo.mCallback.afterHook(acb);
                 }
