@@ -54,6 +54,7 @@ public class MainModule extends XposedModule {
     @Override
     public void onModuleLoaded(@NonNull XposedModuleInterface.ModuleLoadedParam param) {
         processName = param.getProcessName();
+        XposedHelpers.log("[duckfix] lifecycle fired: onModuleLoaded in " + processName);
     }
 
     private void initPrefs() {
@@ -62,8 +63,10 @@ public class MainModule extends XposedModule {
         Map<String, ?> allPrefs = readPrefs.getAll();
         if (allPrefs == null || allPrefs.size() == 0)
             XposedHelpers.log("Empty preferences!");
-        else
+        else {
             mPrefs.putAll(allPrefs);
+            XposedHelpers.log("[duckfix] initPrefs read " + allPrefs.size() + " keys in " + processName);
+        }
     }
 
     private void watchPreferenceChange() {
@@ -93,6 +96,7 @@ public class MainModule extends XposedModule {
 
     @Override
     public void onSystemServerStarting(final SystemServerStartingParam lpparam) {
+        XposedHelpers.log("[duckfix] lifecycle fired: onSystemServerStarting");
         initPrefs();
         PackagePermissions.hook(lpparam);
         GlobalActions.setupGlobalActions(lpparam);
@@ -181,6 +185,7 @@ public class MainModule extends XposedModule {
     @Override
     public void onPackageLoaded(final PackageLoadedParam lpparam) {
         super.onPackageLoaded(lpparam);
+        XposedHelpers.log("[duckfix] lifecycle fired: onPackageLoaded pkg=" + lpparam.getPackageName() + " proc=" + processName);
         if (!lpparam.isFirstPackage()) return;
 
         String pkg = lpparam.getPackageName();
