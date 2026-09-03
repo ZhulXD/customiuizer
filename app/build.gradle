@@ -89,8 +89,7 @@ dependencies {
     compileOnly files('lib/miuisystem.jar')
     compileOnly files('lib/framework.jar')
 
-    // [duckfix] libxposed service 100-1.0.0 hilang dari maven publik; vendor AAR resmi 102.0.0 (klien + stub AIDL, kompatibel Vector 2.2+)
-    implementation files('lib/service-102.0.0.aar', 'lib/interface-102.0.0.aar')
+    implementation "io.github.libxposed:service:100-1.0.0"
     implementation "org.apache.commons:commons-lang3:3.13.0"
     implementation "androidx.preference:preference:1.2.1"
     implementation 'androidx.palette:palette:1.0.0'
