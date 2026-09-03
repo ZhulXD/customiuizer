@@ -99,7 +99,23 @@ public class Helpers {
     public static final int REQUEST_PERMISSIONS_SECURITY_CENTER = 6;
     public static boolean withinAppContext = false;
 
-    public static final boolean isMIUI14 = Integer.parseInt(miui.os.Build.getMiUiVersionCode()) > 13;
+    // [duckfix] miui.os.Build.getMiUiVersionCode() tidak ada di framework MIUI 14 build MTK budget (23028RN4DG TGOMIXM)
+    // → fallback ke system property ro.miui.ui.version.code yang universal di semua MIUI
+    public static final boolean isMIUI14 = getMIUIMajorVersion() > 13;
+
+    private static int getMIUIMajorVersion() {
+        try {
+            return Integer.parseInt(miui.os.Build.getMiUiVersionCode());
+        } catch (Throwable t) {
+            try {
+                Class<?> sp = Class.forName("android.os.SystemProperties");
+                String ver = (String) sp.getMethod("get", String.class, String.class).invoke(null, "ro.miui.ui.version.code", "0");
+                return Integer.parseInt(ver.trim());
+            } catch (Throwable t2) {
+                return 0;
+            }
+        }
+    }
 
     public static LruCache<String, Bitmap> memoryCache = new LruCache<String, Bitmap>((int)(Runtime.getRuntime().maxMemory() / 1024) / 2) {
         @Override
