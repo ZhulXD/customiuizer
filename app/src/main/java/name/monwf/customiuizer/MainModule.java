@@ -239,7 +239,14 @@ public class MainModule extends XposedModule {
         }
         if (pkg.equals("com.android.systemui")) {
             Context mContext = ModuleHelper.findContext(lpparam);
-            long restartTime = Settings.System.getLong(mContext.getContentResolver(), "systemui_restart_time", 0L);
+            // [duckfix] getSystemContext() masih bermerek paket "android" saat onPackageLoaded
+            // → SecurityException di uid systemui. Baca aman; gagal = anggap tanpa restart manual.
+            long restartTime = 0L;
+            try {
+                if (mContext != null) restartTime = Settings.System.getLong(mContext.getContentResolver(), "systemui_restart_time", 0L);
+            } catch (Throwable t) {
+                XposedHelpers.log(t);
+            }
             long currentTime = java.lang.System.currentTimeMillis();
             Class<?> NetworkSpeedViewCls = XposedHelpers.findClassIfExists("com.android.systemui.statusbar.views.NetworkSpeedView", lpparam.getDefaultClassLoader());
             if (NetworkSpeedViewCls != null) {
