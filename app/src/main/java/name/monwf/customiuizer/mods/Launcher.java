@@ -45,8 +45,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import io.github.libxposed.api.XposedInterface.AfterHookCallback;
-import io.github.libxposed.api.XposedInterface.BeforeHookCallback;
+import name.monwf.customiuizer.mods.utils.HookerClassHelper.AfterHookCallback;
+import name.monwf.customiuizer.mods.utils.HookerClassHelper.BeforeHookCallback;
 import io.github.libxposed.api.XposedModuleInterface.PackageLoadedParam;
 import miui.process.ForegroundInfo;
 import miui.process.ProcessManager;

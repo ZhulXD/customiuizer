@@ -99,8 +99,8 @@ import java.util.Locale;
 import java.util.Properties;
 
 import io.github.libxposed.api.XposedInterface;
-import io.github.libxposed.api.XposedInterface.AfterHookCallback;
-import io.github.libxposed.api.XposedInterface.BeforeHookCallback;
+import name.monwf.customiuizer.mods.utils.HookerClassHelper.AfterHookCallback;
+import name.monwf.customiuizer.mods.utils.HookerClassHelper.BeforeHookCallback;
 import io.github.libxposed.api.XposedModuleInterface.PackageLoadedParam;
 import miui.app.MiuiFreeFormManager;
 import miui.os.Build;

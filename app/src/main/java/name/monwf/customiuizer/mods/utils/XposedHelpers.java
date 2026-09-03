@@ -36,6 +36,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -735,58 +736,20 @@ public final class XposedHelpers {
     }
 
     public static CustomMethodUnhooker doHookMethod(Method m, MethodHook hook) {
-        CustomMethodUnhooker unhooker;
-        boolean hooked;
-        if (hook.mPriority > XposedInterface.PRIORITY_DEFAULT) {
-            hooked = HighestPriorityHooker.memberIsRegistered(m);
-            unhooker = HighestPriorityHooker.addCallback(m, hook);
-            if (!hooked) {
-                moduleInst.hook(m, HighestPriorityHooker.class);
-            }
-        }
-        else if (hook.mPriority < XposedInterface.PRIORITY_DEFAULT) {
-            hooked = LowestPriorityHooker.memberIsRegistered(m);
-            unhooker = LowestPriorityHooker.addCallback(m, hook);
-            if (!hooked) {
-                moduleInst.hook(m, LowestPriorityHooker.class);
-            }
-        }
-        else {
-            hooked = CustomHooker.memberIsRegistered(m);
-            unhooker = CustomHooker.addCallback(m, hook);
-            if (!hooked) {
-                moduleInst.hook(m, CustomHooker.class);
-            }
-        }
-
-        return unhooker;
+        return doHookMember(m, hook);
     }
 
     private static CustomMethodUnhooker doHookConstructor(Constructor<?> m, MethodHook hook) {
-        CustomMethodUnhooker unhooker;
-        boolean hooked;
-        if (hook.mPriority > XposedInterface.PRIORITY_DEFAULT) {
-            hooked = HighestPriorityHooker.memberIsRegistered(m);
-            unhooker = HighestPriorityHooker.addCallback(m, hook);
-            if (!hooked) {
-                moduleInst.hook(m, HighestPriorityHooker.class);
-            }
-        }
-        else if (hook.mPriority < XposedInterface.PRIORITY_DEFAULT) {
-            hooked = LowestPriorityHooker.memberIsRegistered(m);
-            unhooker = LowestPriorityHooker.addCallback(m, hook);
-            if (!hooked) {
-                moduleInst.hook(m, LowestPriorityHooker.class);
-            }
-        }
-        else {
-            hooked = CustomHooker.memberIsRegistered(m);
-            unhooker = CustomHooker.addCallback(m, hook);
-            if (!hooked) {
-                moduleInst.hook(m, CustomHooker.class);
-            }
-        }
+        return doHookMember(m, hook);
+    }
 
+    /** [duckfix] API-102: hook via HookBuilder.setPriority + intercept(CustomHooker) — menggantikan hook(m, HookerClass) API-100 */
+    private static CustomMethodUnhooker doHookMember(Member m, MethodHook hook) {
+        CustomMethodUnhooker unhooker = HookerClassHelper.CustomHooker.addCallback(m, hook);
+        if (!HookerClassHelper.CustomHooker.memberIsRegistered(m)) {
+            HookerClassHelper.CustomHooker.markRegistered(m);
+            moduleInst.hook((Executable) m).setPriority(hook.mPriority).intercept(new HookerClassHelper.CustomHooker());
+        }
         return unhooker;
     }
 

@@ -29,6 +29,7 @@ import name.monwf.customiuizer.mods.PackagePermissions;
 import name.monwf.customiuizer.mods.System;
 import name.monwf.customiuizer.mods.SystemUI;
 import name.monwf.customiuizer.mods.Various;
+import name.monwf.customiuizer.mods.utils.HookerClassHelper.AfterHookCallback;
 import name.monwf.customiuizer.mods.utils.HookerClassHelper.MethodHook;
 import name.monwf.customiuizer.mods.utils.ModuleHelper;
 import name.monwf.customiuizer.mods.utils.ResourceHooks;
