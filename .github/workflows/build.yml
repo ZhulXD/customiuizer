@@ -24,7 +24,15 @@ jobs:
       - name: Preinstall SDK components + accept licenses
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0" >/dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0" "platforms;android-33" "build-tools;33.0.1" >/dev/null
+
+      - name: Build io.github.libxposed:service:100-1.0.0 to mavenLocal (hilang dari maven publik)
+        run: |
+          git clone --depth 1 -b 100 https://github.com/libxposed/service.git /tmp/xservice
+          cd /tmp/xservice
+          chmod +x gradlew
+          ./gradlew publishToMavenLocal --no-daemon
+          ls ~/.m2/repository/io/github/libxposed/service/ || true
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew

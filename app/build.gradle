@@ -89,7 +89,7 @@ dependencies {
     compileOnly files('lib/miuisystem.jar')
     compileOnly files('lib/framework.jar')
 
-    implementation "com.github.libxposed:service:100"
+    implementation "io.github.libxposed:service:100-1.0.0"
     implementation "org.apache.commons:commons-lang3:3.13.0"
     implementation "androidx.preference:preference:1.2.1"
     implementation 'androidx.palette:palette:1.0.0'
