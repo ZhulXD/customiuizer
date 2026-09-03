@@ -236,11 +236,11 @@ public class MainModule extends XposedModule {
             Context mContext = ModuleHelper.findContext(lpparam);
             long restartTime = Settings.System.getLong(mContext.getContentResolver(), "systemui_restart_time", 0L);
             long currentTime = java.lang.System.currentTimeMillis();
-            Class<?> NetworkSpeedViewCls = XposedHelpers.findClassIfExists("com.android.systemui.statusbar.views.NetworkSpeedView", lpparam.getDefaultClassLoader());
+            Class<?> NetworkSpeedViewCls = XposedHelpers.findClassIfExists("com.android.systemui.statusbar.views.NetworkSpeedView", lpparam.getClassLoader());
             if (NetworkSpeedViewCls != null) {
                 SystemUI.newStyle = LinearLayout.class.isAssignableFrom(NetworkSpeedViewCls);
             }
-            ModuleHelper.findAndHookMethod("com.android.systemui.SystemUIApplication", lpparam.getDefaultClassLoader(), "onCreate", new MethodHook() {
+            ModuleHelper.findAndHookMethod("com.android.systemui.SystemUIApplication", lpparam.getClassLoader(), "onCreate", new MethodHook() {
                 private boolean isHooked = false;
                 @Override
                 protected void after(final AfterHookCallback param) throws Throwable {

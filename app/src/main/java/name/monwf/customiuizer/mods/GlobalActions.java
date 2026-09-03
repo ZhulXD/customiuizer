@@ -760,7 +760,7 @@ public class GlobalActions {
     }
 
     public static void setupGlobalActions(XposedModuleInterface.SystemServerStartingParam lpparam) {
-        ModuleHelper.hookAllConstructors("com.android.server.accessibility.AccessibilityManagerService", lpparam.getDefaultClassLoader(), new MethodHook() {
+        ModuleHelper.hookAllConstructors("com.android.server.accessibility.AccessibilityManagerService", lpparam.getClassLoader(), new MethodHook() {
             @SuppressLint("UnspecifiedRegisterReceiverFlag")
             @Override
             protected void after(final AfterHookCallback param) throws Throwable {
@@ -799,7 +799,7 @@ public class GlobalActions {
             }
         });
 
-        ModuleHelper.hookAllMethods("com.android.server.policy.BaseMiuiPhoneWindowManager", lpparam.getDefaultClassLoader(), "initInternal", new MethodHook() {
+        ModuleHelper.hookAllMethods("com.android.server.policy.BaseMiuiPhoneWindowManager", lpparam.getClassLoader(), "initInternal", new MethodHook() {
             @SuppressLint("UnspecifiedRegisterReceiverFlag")
             @Override
             protected void after(final AfterHookCallback param) throws Throwable {
@@ -851,7 +851,7 @@ public class GlobalActions {
     }
 
     public static void setupStatusBar(PackageLoadedParam lpparam) {
-        Class<?> StatusBarClass = findClassIfExists("com.android.systemui.statusbar.phone.CentralSurfacesImpl", lpparam.getDefaultClassLoader());
+        Class<?> StatusBarClass = findClassIfExists("com.android.systemui.statusbar.phone.CentralSurfacesImpl", lpparam.getClassLoader());
         if (StatusBarClass == null) return;
         ModuleHelper.findAndHookMethod(StatusBarClass, "start", new MethodHook() {
             @SuppressLint("UnspecifiedRegisterReceiverFlag")

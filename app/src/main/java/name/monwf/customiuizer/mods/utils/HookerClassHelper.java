@@ -31,7 +31,7 @@ public class HookerClassHelper {
 
         public Member getMember() { return chain.getExecutable(); }
         public Object getThisObject() { return chain.getThisObject(); }
-        public java.util.List<Object> getArgs() { return chain.getArgs(); }
+        public Object[] getArgs() { return chain.getArgs().toArray(); }
         public Object getResult() { return null; }
         public void setResult(Object result) { pendingResult = result; resultSet = true; }
         public Throwable getThrowable() { return null; }
@@ -56,7 +56,7 @@ public class HookerClassHelper {
 
         public Member getMember() { return chain.getExecutable(); }
         public Object getThisObject() { return chain.getThisObject(); }
-        public java.util.List<Object> getArgs() { return chain.getArgs(); }
+        public Object[] getArgs() { return chain.getArgs().toArray(); }
         public Object getResult() { return result; }
         public void setResult(Object r) { result = r; resultSet = true; }
         public Throwable getThrowable() { return throwable; }
