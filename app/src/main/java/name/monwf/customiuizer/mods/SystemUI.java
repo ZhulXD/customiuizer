@@ -2483,14 +2483,16 @@ public class SystemUI {
                 @Override
                 protected void after(final AfterHookCallback param) throws Throwable {
                     try {
+                        XposedHelpers.log("[duckfix] InternetDialog lifecycle fired: " + param.getMember().getName());
                         Object window = XposedHelpers.callMethod(param.getThisObject(), "getWindow");
-                        if (window == null) return;
+                        if (window == null) { XposedHelpers.log("[duckfix] InternetDialog window null"); return; }
                         final View decor = (View) XposedHelpers.callMethod(window, "getDecorView");
-                        if (decor == null) return;
+                        if (decor == null) { XposedHelpers.log("[duckfix] InternetDialog decor null"); return; }
                         decor.post(new Runnable() {
                             @Override
                             public void run() {
-                                hideWifiToggleRowsInternal(decor);
+                                int n = hideWifiToggleRowsInternal(decor);
+                                XposedHelpers.log("[duckfix] InternetDialog walker hide count=" + n);
                             }
                         });
                     } catch (Throwable t) {
@@ -2498,8 +2500,9 @@ public class SystemUI {
                     }
                 }
             };
-            ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), "onCreate", hideInDialog);
-            ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), "onStart", hideInDialog);
+            int n1 = ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), "onCreate", hideInDialog).size();
+            int n2 = ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), "onStart", hideInDialog).size();
+            XposedHelpers.log("[duckfix] InternetDialog hooks registered: onCreate=" + n1 + " onStart=" + n2);
         }
 
         if (adapterCls != null) {
@@ -2518,14 +2521,16 @@ public class SystemUI {
         }
     }
 
-    private static void hideWifiToggleRowsInternal(View root) {
+    private static int hideWifiToggleRowsInternal(View root) {
         try {
-            if (root == null || !(root instanceof ViewGroup)) return;
+            if (root == null || !(root instanceof ViewGroup)) return -1;
             ArrayList<View> rows = new ArrayList<>();
             collectWifiToggleRows((ViewGroup) root, rows, 0);
             for (View row : rows) row.setVisibility(View.GONE);
+            return rows.size();
         } catch (Throwable t) {
             XposedHelpers.log(t);
+            return -2;
         }
     }
 
@@ -2534,28 +2539,28 @@ public class SystemUI {
         int n = parent.getChildCount();
         for (int i = 0; i < n; i++) {
             View child = parent.getChildAt(i);
-            if (child instanceof ViewGroup) {
-                ViewGroup vg = (ViewGroup) child;
-                if (isWifiToggleRow(vg)) out.add(vg);
-                else collectWifiToggleRows(vg, out, depth + 1);
+            if (child == null) continue;
+            // [duckfix-cloud] cocokkan resource-id eksak hasil uiautomator dump:
+            // turn_on_wifi_layout (toggle Wi-Fi), wifi_connected_layout (jaringan tersambung),
+            // wifi_list_layout (daftar jaringan tersimpan) — seluruh bagian Wi-Fi disembunyikan
+            if (isWifiPanelSectionView(child)) {
+                out.add(child);
+                continue;
             }
+            if (child instanceof ViewGroup) collectWifiToggleRows((ViewGroup) child, out, depth + 1);
         }
     }
 
-    private static boolean isWifiToggleRow(ViewGroup vg) {
-        boolean hasWifiLabel = false;
-        boolean hasToggle = false;
-        int n = vg.getChildCount();
-        for (int i = 0; i < n; i++) {
-            View c = vg.getChildAt(i);
-            if (c instanceof TextView) {
-                String text = ((TextView) c).getText().toString().trim();
-                if ("wifi".equalsIgnoreCase(text) || "wi-fi".equalsIgnoreCase(text) || "wi‑fi".equalsIgnoreCase(text) || "wlan".equalsIgnoreCase(text)) hasWifiLabel = true;
-            }
-            if (c instanceof Switch || c instanceof CompoundButton) hasToggle = true;
-            if (hasWifiLabel && hasToggle) return true;
+    private static boolean isWifiPanelSectionView(View v) {
+        try {
+            if (v.getId() == View.NO_ID) return false;
+            String name = v.getResources().getResourceEntryName(v.getId());
+            return "turn_on_wifi_layout".equals(name)
+                || "wifi_connected_layout".equals(name)
+                || "wifi_list_layout".equals(name);
+        } catch (Throwable t) {
+            return false;
         }
-        return false;
     }
 
     public static void HideIconsClockHook(PackageLoadedParam lpparam) {
