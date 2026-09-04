@@ -2536,9 +2536,9 @@ public class SystemUI {
     }
 
     // [duckfix-cloud] Tile Internet di Control Center tampil murni sebagai tile seluler:
-    // setWifiIndicators di-skip (CallbackInfo wifi tak pernah terisi) sehingga tile memakai
-    // cabang seluler (ikon data + info carrier), dan secondaryLabel diclear saat cabang wifi
-    // tetap terpicu. Nama SSID/ikon wifi tak pernah tampil di tile.
+    // 1) setWifiIndicators di-skip (CallbackInfo wifi tak pernah terisi),
+    // 2) mLastTileState dipaksa 0 (cellular; 1=wifi 2=ethernet menurut bytecode handleUpdateState),
+    // 3) handleUpdateWifiState di-skip total — ikon/nama wifi tak pernah dirender di tile.
     public static void HideWifiNameInternetTileHook(PackageLoadedParam lpparam) {
         Class<?> tileCls = XposedHelpers.findClassIfExists("com.android.systemui.qs.tiles.InternetTile", lpparam.getDefaultClassLoader());
         Class<?> cbCls = XposedHelpers.findClassIfExists("com.android.systemui.qs.tiles.InternetTile$InternetSignalCallback", lpparam.getDefaultClassLoader());
@@ -2551,20 +2551,28 @@ public class SystemUI {
             });
         }
         if (tileCls == null) return;
-        MethodHook clear = new MethodHook() {
+        ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.InternetTile", lpparam.getDefaultClassLoader(), "handleUpdateState", new MethodHook() {
             @Override
-            protected void after(final AfterHookCallback param) throws Throwable {
+            protected void before(final BeforeHookCallback param) throws Throwable {
                 try {
-                    Object state = param.getArgs()[0];
-                    if (state == null) return;
-                    XposedHelpers.setObjectField(state, "secondaryLabel", "");
+                    XposedHelpers.setIntField(param.getThisObject(), "mLastTileState", 0);
                 } catch (Throwable t) {
                     XposedHelpers.log(t);
                 }
             }
-        };
-        ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.InternetTile", lpparam.getDefaultClassLoader(), "handleUpdateWifiState", clear);
-        XposedHelpers.log("[duckfix] InternetTile secondaryLabel hook registered (cb=" + (cbCls != null) + ")");
+        });
+        ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.InternetTile", lpparam.getDefaultClassLoader(), "handleUpdateWifiState", new MethodHook() {
+            @Override
+            protected void before(final BeforeHookCallback param) throws Throwable {
+                try {
+                    XposedHelpers.setIntField(param.getThisObject(), "mLastTileState", 0);
+                } catch (Throwable t) {
+                    XposedHelpers.log(t);
+                }
+                param.returnAndSkip(null);
+            }
+        });
+        XposedHelpers.log("[duckfix] InternetTile cellular-only hook registered (cb=" + (cbCls != null) + ")");
     }
 
     private static int hideWifiToggleRowsInternal(View root) {
