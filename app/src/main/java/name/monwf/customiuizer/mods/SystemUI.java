@@ -2535,6 +2535,28 @@ public class SystemUI {
         }
     }
 
+    // [duckfix-cloud] Kosongkan secondaryLabel tile Internet hanya pada update state Wi-Fi,
+    // sehingga nama SSID wifi tidak tampil di bawah teks "Internet" di Control Center.
+    // Update seluler (handleUpdateCellularState) tidak disentuh — info carrier tetap tampil.
+    public static void HideWifiNameInternetTileHook(PackageLoadedParam lpparam) {
+        Class<?> tileCls = XposedHelpers.findClassIfExists("com.android.systemui.qs.tiles.InternetTile", lpparam.getDefaultClassLoader());
+        if (tileCls == null) return;
+        MethodHook clear = new MethodHook() {
+            @Override
+            protected void after(final AfterHookCallback param) throws Throwable {
+                try {
+                    Object state = param.getArgs()[0];
+                    if (state == null) return;
+                    XposedHelpers.setObjectField(state, "secondaryLabel", "");
+                } catch (Throwable t) {
+                    XposedHelpers.log(t);
+                }
+            }
+        };
+        ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.InternetTile", lpparam.getDefaultClassLoader(), "handleUpdateWifiState", clear);
+        XposedHelpers.log("[duckfix] InternetTile secondaryLabel hook registered");
+    }
+
     private static int hideWifiToggleRowsInternal(View root) {
         try {
             if (root == null || !(root instanceof ViewGroup)) return -1;

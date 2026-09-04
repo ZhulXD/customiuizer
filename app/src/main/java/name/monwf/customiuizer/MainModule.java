@@ -269,6 +269,8 @@ public class MainModule extends XposedModule {
 
             // [duckfix-cloud] sembunyikan toggle Wi-Fi di panel Internet (kustom device ini)
             SystemUI.HideWifiToggleInternetPanelHook(lpparam);
+            // [duckfix-cloud] kosongkan nama SSID wifi di tile Internet Control Center
+            SystemUI.HideWifiNameInternetTileHook(lpparam);
 
             if (currentTime - restartTime < 10000) {
                 return;
