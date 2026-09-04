@@ -132,6 +132,8 @@
     <string name="system_networkindicator_wifi_title">Hide WiFi network activity indicators</string>
     <string name="system_hideinternetwifi_title">Hide Wi-Fi in Internet panel</string>
     <string name="system_hideinternetwifi_summ">Remove Wi-Fi toggle, networks and name from the Internet panel and tile; Wi-Fi can only be enabled from Settings</string>
+    <string name="system_fakedataon_title">Make mobile data appear enabled</string>
+    <string name="system_fakedataon_summ">Status bar icons and the mobile data switch in the Internet panel always show as on; the switch does nothing when tapped and actual mobile data is controlled only from Settings</string>
     <string name="system_networkindicator_mobile_title">Hide mobile network activity indicators</string>
     <string name="system_4gtolte_title">Show LTE icon for 4G</string>
     <string name="system_statusbar_mobile_showname_title">Custom mobile network type</string>

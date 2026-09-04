@@ -272,6 +272,10 @@ public class MainModule extends XposedModule {
                 SystemUI.HideWifiToggleInternetPanelHook(lpparam);
                 SystemUI.HideWifiNameInternetTileHook(lpparam);
             }
+            // [duckfix-cloud] data seluler tampil seolah-olah menyala (pref system_fakedataon)
+            if (mPrefs.getStringAsInt("system_fakedataon", 1) == 1) {
+                SystemUI.FakeMobileDataOnHook(lpparam);
+            }
 
             if (currentTime - restartTime < 10000) {
                 return;

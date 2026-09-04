@@ -301,6 +301,12 @@
 			android:summary="@string/system_hideinternetwifi_summ"
 			android:defaultValue="true" />
 
+		<name.monwf.customiuizer.prefs.CheckBoxPreferenceEx
+			android:key="pref_key_system_fakedataon"
+			android:title="@string/system_fakedataon_title"
+			android:summary="@string/system_fakedataon_summ"
+			android:defaultValue="true" />
+
 		<name.monwf.customiuizer.prefs.ListPreferenceEx
 			android:key="pref_key_system_statusbaricons_wifistandard"
 			android:title="@string/system_statusbaricons_wifistandard_title"

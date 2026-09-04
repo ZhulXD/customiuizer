@@ -2535,6 +2535,58 @@ public class SystemUI {
         }
     }
 
+    // [duckfix-cloud] Data seluler tampil seolah-olah menyala padahal aslinya mati:
+    // 1) MobileSignalController.isDataDisabled dipaksa false → ikon statusbar (getSbInfo/updateTelephony)
+    //    membangun tampilan data aktif,
+    // 2) switch Data seluler di panel Internet dipaksa checked + tap = dummy (lambda listener di-skip,
+    //    switch langsung di-snap balik ON) — kontrol nyata tetap dari Settings.
+    public static void FakeMobileDataOnHook(PackageLoadedParam lpparam) {
+        Class<?> mscCls = XposedHelpers.findClassIfExists("com.android.systemui.statusbar.connectivity.MobileSignalController", lpparam.getDefaultClassLoader());
+        if (mscCls != null) {
+            ModuleHelper.hookAllMethods("com.android.systemui.statusbar.connectivity.MobileSignalController", lpparam.getDefaultClassLoader(), "isDataDisabled", new MethodHook() {
+                @Override
+                protected void before(final BeforeHookCallback param) throws Throwable {
+                    param.returnAndSkip(false);
+                }
+            });
+            XposedHelpers.log("[duckfix] MobileSignalController.isDataDisabled hook registered");
+        }
+
+        Class<?> idlgCls = XposedHelpers.findClassIfExists("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader());
+        if (idlgCls != null) {
+            // paksa switch Data seluler checked setelah layout di-update
+            ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), "setMobileDataLayout", new MethodHook() {
+                @Override
+                protected void after(final AfterHookCallback param) throws Throwable {
+                    try {
+                        Object sw = XposedHelpers.getObjectField(param.getThisObject(), "mMobileDataToggle");
+                        if (sw instanceof CompoundButton && !((CompoundButton) sw).isChecked()) {
+                            XposedHelpers.callMethod(sw, "setChecked", true);
+                        }
+                    } catch (Throwable t) {
+                        XposedHelpers.log(t);
+                    }
+                }
+            });
+            // tap switch = dummy: skip listener nyata + snap balik ON
+            for (String lambda : new String[]{"lambda$setOnClickListener$3", "lambda$setOnClickListener$4"}) {
+                ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), lambda, new MethodHook() {
+                    @Override
+                    protected void before(final BeforeHookCallback param) throws Throwable {
+                        try {
+                            Object sw = param.getArgs()[1];
+                            if (sw instanceof CompoundButton) XposedHelpers.callMethod(sw, "setChecked", true);
+                        } catch (Throwable t) {
+                            XposedHelpers.log(t);
+                        }
+                        param.returnAndSkip(null);
+                    }
+                });
+            }
+            XposedHelpers.log("[duckfix] InternetDialog fake-data switch hooks registered");
+        }
+    }
+
     // [duckfix-cloud] Tile Internet di Control Center tampil murni sebagai tile seluler:
     // 1) setWifiIndicators di-skip (CallbackInfo wifi tak pernah terisi),
     // 2) mLastTileState dipaksa 0 (cellular; 1=wifi 2=ethernet menurut bytecode handleUpdateState),
