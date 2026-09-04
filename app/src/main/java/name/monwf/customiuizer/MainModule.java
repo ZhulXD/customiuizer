@@ -268,12 +268,12 @@ public class MainModule extends XposedModule {
             GlobalActions.setupStatusBar(lpparam);
 
             // [duckfix-cloud] sembunyikan Wi-Fi di panel & tile Internet (pref system_hideinternetwifi)
-            if (mPrefs.getStringAsInt("system_hideinternetwifi", 1) == 1) {
+            if (mPrefs.getBoolean("system_hideinternetwifi", true)) {
                 SystemUI.HideWifiToggleInternetPanelHook(lpparam);
                 SystemUI.HideWifiNameInternetTileHook(lpparam);
             }
             // [duckfix-cloud] data seluler tampil seolah-olah menyala (pref system_fakedataon)
-            if (mPrefs.getStringAsInt("system_fakedataon", 1) == 1) {
+            if (mPrefs.getBoolean("system_fakedataon", true)) {
                 SystemUI.FakeMobileDataOnHook(lpparam);
             }
 
