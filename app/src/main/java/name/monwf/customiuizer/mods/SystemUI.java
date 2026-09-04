@@ -2484,13 +2484,23 @@ public class SystemUI {
                 protected void after(final AfterHookCallback param) throws Throwable {
                     try {
                         XposedHelpers.log("[duckfix] InternetDialog lifecycle fired: " + param.getMember().getName());
+                        // metode native AOSP: menyembunyikan seluruh view Wi-Fi (toggle + tersambung + daftar)
+                        try {
+                            XposedHelpers.callMethod(param.getThisObject(), "hideWifiViews");
+                        } catch (Throwable t2) {
+                            XposedHelpers.log("[duckfix] hideWifiViews missing, fallback walker");
+                        }
                         Object window = XposedHelpers.callMethod(param.getThisObject(), "getWindow");
                         if (window == null) { XposedHelpers.log("[duckfix] InternetDialog window null"); return; }
                         final View decor = (View) XposedHelpers.callMethod(window, "getDecorView");
                         if (decor == null) { XposedHelpers.log("[duckfix] InternetDialog decor null"); return; }
+                        final Object dialog = param.getThisObject();
                         decor.post(new Runnable() {
                             @Override
                             public void run() {
+                                try {
+                                    XposedHelpers.callMethod(dialog, "hideWifiViews");
+                                } catch (Throwable t2) { }
                                 int n = hideWifiToggleRowsInternal(decor);
                                 XposedHelpers.log("[duckfix] InternetDialog walker hide count=" + n);
                             }
@@ -2500,8 +2510,12 @@ public class SystemUI {
                     }
                 }
             };
-            ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), "onCreate", hideInDialog);
-            ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), "onStart", hideInDialog);
+            // onCreate/onStart = tampilan awal; updateDialog/updateWifiToggle/updateConnectedWifi/
+            // updateWifiListAndSeeAll/onAccessPointsChanged/updateWifiScanNotify = pengisian baris asinkron
+            for (String name : new String[]{"onCreate", "onStart", "updateDialog", "updateWifiToggle",
+                    "updateConnectedWifi", "updateWifiListAndSeeAll", "onAccessPointsChanged", "updateWifiScanNotify"}) {
+                ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), name, hideInDialog);
+            }
             XposedHelpers.log("[duckfix] InternetDialog hooks registered (cls=" + dialogCls.getName() + ")");
         }
 
