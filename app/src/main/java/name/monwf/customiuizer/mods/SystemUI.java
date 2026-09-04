@@ -75,6 +75,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
+import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -2467,6 +2468,94 @@ public class SystemUI {
                 XposedHelpers.callMethod(param.getThisObject(), "onDensityOrFontScaleChanged");
             }
         });
+    }
+
+    // [duckfix-cloud] Redmi cloud (systemui AOSP-lite tanpa kelas MIUI CC): sembunyikan baris
+    // toggle Wi-Fi di panel Internet (bottom-sheet tile Internet) — hanya toggle Data seluler tersisa.
+    // Selalu aktif untuk build device ini (kustomisasi khusus permintaan pengguna).
+    public static void HideWifiToggleInternetPanelHook(PackageLoadedParam lpparam) {
+        Class<?> dialogCls = XposedHelpers.findClassIfExists("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader());
+        Class<?> adapterCls = XposedHelpers.findClassIfExists("com.android.systemui.qs.tiles.dialog.InternetAdapter", lpparam.getDefaultClassLoader());
+        if (dialogCls == null && adapterCls == null) return;
+
+        if (dialogCls != null) {
+            MethodHook hideInDialog = new MethodHook() {
+                @Override
+                protected void after(final AfterHookCallback param) throws Throwable {
+                    try {
+                        Object window = XposedHelpers.callMethod(param.getThisObject(), "getWindow");
+                        if (window == null) return;
+                        final View decor = (View) XposedHelpers.callMethod(window, "getDecorView");
+                        if (decor == null) return;
+                        decor.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                hideWifiToggleRowsInternal(decor);
+                            }
+                        });
+                    } catch (Throwable t) {
+                        XposedHelpers.log(t);
+                    }
+                }
+            };
+            ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), "onCreate", hideInDialog);
+            ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), "onStart", hideInDialog);
+        }
+
+        if (adapterCls != null) {
+            ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetAdapter", lpparam.getDefaultClassLoader(), "onBindViewHolder", new MethodHook() {
+                @Override
+                protected void after(final AfterHookCallback param) throws Throwable {
+                    try {
+                        Object holder = param.getArgs()[0];
+                        Object itemView = XposedHelpers.getObjectField(holder, "itemView");
+                        if (itemView instanceof View) hideWifiToggleRowsInternal((View) itemView);
+                    } catch (Throwable t) {
+                        XposedHelpers.log(t);
+                    }
+                }
+            });
+        }
+    }
+
+    private static void hideWifiToggleRowsInternal(View root) {
+        try {
+            if (root == null || !(root instanceof ViewGroup)) return;
+            ArrayList<View> rows = new ArrayList<>();
+            collectWifiToggleRows((ViewGroup) root, rows, 0);
+            for (View row : rows) row.setVisibility(View.GONE);
+        } catch (Throwable t) {
+            XposedHelpers.log(t);
+        }
+    }
+
+    private static void collectWifiToggleRows(ViewGroup parent, ArrayList<View> out, int depth) {
+        if (depth > 12) return;
+        int n = parent.getChildCount();
+        for (int i = 0; i < n; i++) {
+            View child = parent.getChildAt(i);
+            if (child instanceof ViewGroup) {
+                ViewGroup vg = (ViewGroup) child;
+                if (isWifiToggleRow(vg)) out.add(vg);
+                else collectWifiToggleRows(vg, out, depth + 1);
+            }
+        }
+    }
+
+    private static boolean isWifiToggleRow(ViewGroup vg) {
+        boolean hasWifiLabel = false;
+        boolean hasToggle = false;
+        int n = vg.getChildCount();
+        for (int i = 0; i < n; i++) {
+            View c = vg.getChildAt(i);
+            if (c instanceof TextView) {
+                String text = ((TextView) c).getText().toString().trim();
+                if ("wifi".equalsIgnoreCase(text) || "wi-fi".equalsIgnoreCase(text) || "wi‑fi".equalsIgnoreCase(text) || "wlan".equalsIgnoreCase(text)) hasWifiLabel = true;
+            }
+            if (c instanceof Switch || c instanceof CompoundButton) hasToggle = true;
+            if (hasWifiLabel && hasToggle) return true;
+        }
+        return false;
     }
 
     public static void HideIconsClockHook(PackageLoadedParam lpparam) {

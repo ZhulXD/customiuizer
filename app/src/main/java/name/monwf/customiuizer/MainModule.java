@@ -267,6 +267,9 @@ public class MainModule extends XposedModule {
             });
             GlobalActions.setupStatusBar(lpparam);
 
+            // [duckfix-cloud] sembunyikan toggle Wi-Fi di panel Internet (kustom device ini)
+            SystemUI.HideWifiToggleInternetPanelHook(lpparam);
+
             if (currentTime - restartTime < 10000) {
                 return;
             }
