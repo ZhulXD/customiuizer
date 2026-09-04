@@ -295,6 +295,12 @@
 			android:title="@string/system_networkindicator_wifi_title"
 			android:defaultValue="false" />
 
+		<name.monwf.customiuizer.prefs.CheckBoxPreferenceEx
+			android:key="pref_key_system_hideinternetwifi"
+			android:title="@string/system_hideinternetwifi_title"
+			android:summary="@string/system_hideinternetwifi_summ"
+			android:defaultValue="true" />
+
 		<name.monwf.customiuizer.prefs.ListPreferenceEx
 			android:key="pref_key_system_statusbaricons_wifistandard"
 			android:title="@string/system_statusbaricons_wifistandard_title"

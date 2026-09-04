@@ -267,10 +267,11 @@ public class MainModule extends XposedModule {
             });
             GlobalActions.setupStatusBar(lpparam);
 
-            // [duckfix-cloud] sembunyikan toggle Wi-Fi di panel Internet (kustom device ini)
-            SystemUI.HideWifiToggleInternetPanelHook(lpparam);
-            // [duckfix-cloud] kosongkan nama SSID wifi di tile Internet Control Center
-            SystemUI.HideWifiNameInternetTileHook(lpparam);
+            // [duckfix-cloud] sembunyikan Wi-Fi di panel & tile Internet (pref system_hideinternetwifi)
+            if (mPrefs.getStringAsInt("system_hideinternetwifi", 1) == 1) {
+                SystemUI.HideWifiToggleInternetPanelHook(lpparam);
+                SystemUI.HideWifiNameInternetTileHook(lpparam);
+            }
 
             if (currentTime - restartTime < 10000) {
                 return;
