@@ -2483,17 +2483,13 @@ public class SystemUI {
                 @Override
                 protected void after(final AfterHookCallback param) throws Throwable {
                     try {
-                        XposedHelpers.log("[duckfix] InternetDialog lifecycle fired: " + param.getMember().getName());
                         // metode native AOSP: menyembunyikan seluruh view Wi-Fi (toggle + tersambung + daftar)
                         try {
                             XposedHelpers.callMethod(param.getThisObject(), "hideWifiViews");
                         } catch (Throwable t2) {
-                            XposedHelpers.log("[duckfix] hideWifiViews missing, fallback walker");
                         }
                         Object window = XposedHelpers.callMethod(param.getThisObject(), "getWindow");
-                        if (window == null) { XposedHelpers.log("[duckfix] InternetDialog window null"); return; }
                         final View decor = (View) XposedHelpers.callMethod(window, "getDecorView");
-                        if (decor == null) { XposedHelpers.log("[duckfix] InternetDialog decor null"); return; }
                         final Object dialog = param.getThisObject();
                         decor.post(new Runnable() {
                             @Override
@@ -2501,8 +2497,7 @@ public class SystemUI {
                                 try {
                                     XposedHelpers.callMethod(dialog, "hideWifiViews");
                                 } catch (Throwable t2) { }
-                                int n = hideWifiToggleRowsInternal(decor);
-                                XposedHelpers.log("[duckfix] InternetDialog walker hide count=" + n);
+                                hideWifiToggleRowsInternal(decor);
                             }
                         });
                     } catch (Throwable t) {
@@ -2516,7 +2511,6 @@ public class SystemUI {
                     "updateConnectedWifi", "updateWifiListAndSeeAll", "onAccessPointsChanged", "updateWifiScanNotify"}) {
                 ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), name, hideInDialog);
             }
-            XposedHelpers.log("[duckfix] InternetDialog hooks registered (cls=" + dialogCls.getName() + ")");
         }
 
         if (adapterCls != null) {
@@ -2549,7 +2543,6 @@ public class SystemUI {
                     param.returnAndSkip(false);
                 }
             });
-            XposedHelpers.log("[duckfix] MobileSignalController.isDataDisabled hook registered");
         }
 
         Class<?> idlgCls = XposedHelpers.findClassIfExists("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader());
@@ -2583,7 +2576,6 @@ public class SystemUI {
                     }
                 });
             }
-            XposedHelpers.log("[duckfix] InternetDialog fake-data switch hooks registered");
         }
     }
 
@@ -2624,7 +2616,6 @@ public class SystemUI {
                 param.returnAndSkip(null);
             }
         });
-        XposedHelpers.log("[duckfix] InternetTile cellular-only hook registered (cb=" + (cbCls != null) + ")");
     }
 
     private static int hideWifiToggleRowsInternal(View root) {
@@ -2750,7 +2741,6 @@ public class SystemUI {
             @Override
             protected void before(final BeforeHookCallback param) throws Throwable {
                 String iconType = (String)param.getArgs()[0];
-                XposedHelpers.log("[duckfix] setIconVisibility slot=" + iconType + " vis=" + param.getArgs()[1]);
                 if (checkSlot(iconType)) {
                     param.getArgs()[1] = false;
                 }

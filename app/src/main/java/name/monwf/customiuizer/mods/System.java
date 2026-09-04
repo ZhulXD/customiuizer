@@ -4632,10 +4632,17 @@ public class System {
 
     public static void NetworkIndicatorWifi(PackageLoadedParam lpparam) {
         MethodHook hideWifiActivity = new MethodHook() {
+            private boolean supported = true;
             @Override
             protected void after(final AfterHookCallback param) throws Throwable {
-                Object mWifiActivityView = XposedHelpers.getObjectField(param.getThisObject(), "mWifiActivityView");
-                XposedHelpers.callMethod(mWifiActivityView, "setVisibility", 4);
+                if (!supported) return;
+                try {
+                    Object mWifiActivityView = XposedHelpers.getObjectField(param.getThisObject(), "mWifiActivityView");
+                    XposedHelpers.callMethod(mWifiActivityView, "setVisibility", 4);
+                } catch (Throwable t) {
+                    // field tidak ada pada build ini (systemui AOSP-lite) — fitor tidak berlaku, skip senyap
+                    supported = false;
+                }
             }
         };
         ModuleHelper.hookAllMethods("com.android.systemui.statusbar.StatusBarWifiView", lpparam.getDefaultClassLoader(), "applyWifiState", hideWifiActivity);

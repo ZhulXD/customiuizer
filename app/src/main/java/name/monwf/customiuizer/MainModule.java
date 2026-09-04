@@ -54,7 +54,6 @@ public class MainModule extends XposedModule {
     @Override
     public void onModuleLoaded(@NonNull XposedModuleInterface.ModuleLoadedParam param) {
         processName = param.getProcessName();
-        XposedHelpers.log("[duckfix] lifecycle fired: onModuleLoaded in " + processName);
     }
 
     private void initPrefs() {
@@ -65,7 +64,6 @@ public class MainModule extends XposedModule {
             XposedHelpers.log("Empty preferences!");
         else {
             mPrefs.putAll(allPrefs);
-            XposedHelpers.log("[duckfix] initPrefs read " + allPrefs.size() + " keys in " + processName);
         }
     }
 
@@ -96,7 +94,6 @@ public class MainModule extends XposedModule {
 
     @Override
     public void onSystemServerStarting(final SystemServerStartingParam lpparam) {
-        XposedHelpers.log("[duckfix] lifecycle fired: onSystemServerStarting");
         initPrefs();
         PackagePermissions.hook(lpparam);
         GlobalActions.setupGlobalActions(lpparam);
@@ -185,7 +182,6 @@ public class MainModule extends XposedModule {
     @Override
     public void onPackageLoaded(final PackageLoadedParam lpparam) {
         super.onPackageLoaded(lpparam);
-        XposedHelpers.log("[duckfix] lifecycle fired: onPackageLoaded pkg=" + lpparam.getPackageName() + " proc=" + processName);
         if (!lpparam.isFirstPackage()) return;
 
         String pkg = lpparam.getPackageName();
@@ -258,7 +254,6 @@ public class MainModule extends XposedModule {
                 protected void after(final AfterHookCallback param) throws Throwable {
                     if (!isHooked) {
                         isHooked = true;
-                        XposedHelpers.log("[duckfix] SystemUIApplication.onCreate after — setupStatusBar dipanggil");
                         Context context = (Context) XposedHelpers.callMethod(param.getThisObject(), "getApplicationContext");
                         SystemUI.setupStatusBar(context);
                         watchPreferenceChange();
