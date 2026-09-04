@@ -2535,11 +2535,21 @@ public class SystemUI {
         }
     }
 
-    // [duckfix-cloud] Kosongkan secondaryLabel tile Internet hanya pada update state Wi-Fi,
-    // sehingga nama SSID wifi tidak tampil di bawah teks "Internet" di Control Center.
-    // Update seluler (handleUpdateCellularState) tidak disentuh — info carrier tetap tampil.
+    // [duckfix-cloud] Tile Internet di Control Center tampil murni sebagai tile seluler:
+    // setWifiIndicators di-skip (CallbackInfo wifi tak pernah terisi) sehingga tile memakai
+    // cabang seluler (ikon data + info carrier), dan secondaryLabel diclear saat cabang wifi
+    // tetap terpicu. Nama SSID/ikon wifi tak pernah tampil di tile.
     public static void HideWifiNameInternetTileHook(PackageLoadedParam lpparam) {
         Class<?> tileCls = XposedHelpers.findClassIfExists("com.android.systemui.qs.tiles.InternetTile", lpparam.getDefaultClassLoader());
+        Class<?> cbCls = XposedHelpers.findClassIfExists("com.android.systemui.qs.tiles.InternetTile$InternetSignalCallback", lpparam.getDefaultClassLoader());
+        if (cbCls != null) {
+            ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.InternetTile$InternetSignalCallback", lpparam.getDefaultClassLoader(), "setWifiIndicators", new MethodHook() {
+                @Override
+                protected void before(final BeforeHookCallback param) throws Throwable {
+                    param.returnAndSkip(null);
+                }
+            });
+        }
         if (tileCls == null) return;
         MethodHook clear = new MethodHook() {
             @Override
@@ -2554,7 +2564,7 @@ public class SystemUI {
             }
         };
         ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.InternetTile", lpparam.getDefaultClassLoader(), "handleUpdateWifiState", clear);
-        XposedHelpers.log("[duckfix] InternetTile secondaryLabel hook registered");
+        XposedHelpers.log("[duckfix] InternetTile secondaryLabel hook registered (cb=" + (cbCls != null) + ")");
     }
 
     private static int hideWifiToggleRowsInternal(View root) {
