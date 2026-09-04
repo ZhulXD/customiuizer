@@ -2500,9 +2500,9 @@ public class SystemUI {
                     }
                 }
             };
-            int n1 = ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), "onCreate", hideInDialog).size();
-            int n2 = ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), "onStart", hideInDialog).size();
-            XposedHelpers.log("[duckfix] InternetDialog hooks registered: onCreate=" + n1 + " onStart=" + n2);
+            ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), "onCreate", hideInDialog);
+            ModuleHelper.hookAllMethods("com.android.systemui.qs.tiles.dialog.InternetDialog", lpparam.getDefaultClassLoader(), "onStart", hideInDialog);
+            XposedHelpers.log("[duckfix] InternetDialog hooks registered (cls=" + dialogCls.getName() + ")");
         }
 
         if (adapterCls != null) {
